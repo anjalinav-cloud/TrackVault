@@ -1,174 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Performance Tracker</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            margin-top: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            backdrop-filter: blur(10px);
-            width: 60%;
-            text-align: center;
-        }
-        input, button {
-            padding: 12px;
-            margin: 10px;
-            border: none;
-            border-radius: 8px;
-        }
-        button {
-            background-color: #764ba2;
-            color: white;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        button:hover {
-            background-color: #667eea;
-        }
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid white;
-        }
-        h1, h2 {
-            margin-bottom: 20px;
-        }
-        .file-upload {
-            margin-top: 20px;
-        }
-        #performanceChart {
-            background: white;
-            border-radius: 15px;
-            padding: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            margin-top: 20px;
-        }
-        footer {
-            margin-top: 20px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Performance Tracker DApp</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(to right, #ec6028, #8e2de2);
+      color: white;
+    }
+
+    canvas {
+      background: white;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: #2e0b51;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+
+    button:hover {
+      background-color: #5a3a8c;
+    }
+
+    input {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    #inputSection {
+      margin-top: 20px;
+    }
+
+    #uploadSection {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Performance Tracker</h1>
-        <h2>Add New Performance</h2>
-        <input type="text" id="username" placeholder="Enter User Name">
-        <input type="number" id="score" placeholder="Enter Score">
-        <button onclick="addPerformance()">Add Performance</button>
-        <h2>Performance Data</h2>
-        <table id="performanceTable">
-            <tr>
-                <th>User Name</th>
-                <th>Score</th>
-            </tr>
-        </table>
-        <h2>Performance Graph</h2>
-        <canvas id="performanceChart" width="600" height="400"></canvas><br>
-        <button align="center" onclick="downloadExcel()">Download Excel</button>
-    </div>
-    <footer>
-        <p  align="center">| Developed by Anjali Maroo |</p><p align="center">| Email: uni.anjali1@gmail.com] | </p>
-        <p align="center">| Deployer Address: 0xd9145CCE52D386f254917e481eB44e9943F39138 (Edu Chain) |</p>
-    </footer>
-    <script>
-        let performanceData = [];
-        function uploadExcel() {
-            const fileInput = document.getElementById('excelFile');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Please upload a valid Excel file.');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheetName = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[sheetName];
-                performanceData = XLSX.utils.sheet_to_json(sheet);
-                displayData();
-                drawChart();
-            };
-            reader.readAsArrayBuffer(file);
-        }
-        function displayData() {
-            const table = document.getElementById('performanceTable');
-            table.innerHTML = `
-                <tr>
-                    <th>User Name</th>
-                    <th>Score</th>
-                </tr>`;
-            performanceData.forEach((entry) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${entry.UserName}</td><td>${entry.Score}</td>`;
-                table.appendChild(row);
-            });
-            drawChart();
-        }
-        function addPerformance() {
-            const username = document.getElementById('username').value;
-            const score = document.getElementById('score').value;
-            if (username && score) {
-                performanceData.push({ UserName: username, Score: parseInt(score) });
-                displayData();
-                document.getElementById('username').value = '';
-                document.getElementById('score').value = '';
-            } else {
-                alert('Please enter both a username and score.');
-            }
-        }
-        function downloadExcel() {
-            const worksheet = XLSX.utils.json_to_sheet(performanceData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'PerformanceData');
-            XLSX.writeFile(workbook, 'PerformanceData.xlsx');
-        }
-        function drawChart() {
-            const canvas = document.getElementById('performanceChart');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const barWidth = 40;
-            const gap = 20;
-            const maxHeight = 300;
-            const maxScore = Math.max(...performanceData.map(entry => entry.Score));
-            performanceData.forEach((entry, index) => {
-                const barHeight = (entry.Score / maxScore) * maxHeight;
-                const x = gap + index * (barWidth + gap);
-                const y = canvas.height - barHeight;
-                ctx.fillStyle = '#764ba2';
-                ctx.fillRect(x, y, barWidth, barHeight);
-                ctx.fillStyle = '#fff';
-                ctx.font = '12px Poppins';
-                ctx.fillText(entry.UserName, x, y - 10);
-                ctx.fillStyle = '#000';
-                ctx.fillText(entry.Score, x + 10, y + 20);
-            });
-        }
-    </script>
+
+<h1>Performance Tracker with Excel Support</h1><br>
+<button onclick="connectMetaMask()">Connect MetaMask</button><br>
+
+<!-- Upload/Download Section -->
+<div id="uploadSection">
+  <input type="file" id="excelFile" accept=".xlsx" /><br>
+  <button onclick="uploadFromExcel()">Upload from Excel</button><br>
+  
+</div>
+
+<!-- User Input Section -->
+<div id="inputSection">
+  <input type="text" id="userName" placeholder="Enter Your Name">
+  <input type="number" id="userScore" placeholder="Enter Your Score" min="0" max="100"><br>
+  <button onclick="addUserPerformance()">Submit Score</button>
+</div>
+
+<!-- Canvas for Chart -->
+<canvas id="performanceChart" width="800" height="400"></canvas><br>
+<button onclick="downloadToExcel()">Download to Excel</button><br>
+<footer>
+    <p  align="center">| Developed by Anjali Maroo || Email: uni.anjali1@gmail.com] | </p>
+    <p align="center">| Deployer Address: 0xd9145CCE52D386f254917e481eB44e9943F39138 (Edu Chain) |</p>
+</footer>
+<script>
+  let performanceData = []; // Starts empty
+
+  // Draw chart function
+  function drawChart() {
+    const canvas = document.getElementById('performanceChart');
+    const ctx = canvas.getContext('2d');
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (performanceData.length === 0) {
+      ctx.fillStyle = '#000';
+      ctx.font = '20px Arial';
+      ctx.fillText('Upload Data or Add Entries', canvas.width / 3, canvas.height / 2);
+      return;
+    }
+
+    const barWidth = 40;
+    const gap = 20;
+    const maxHeight = 300;
+
+    const maxScore = Math.max(...performanceData.map(entry => entry.Score));
+
+    performanceData.forEach((entry, index) => {
+      const barHeight = (entry.Score / maxScore) * maxHeight;
+      const x = gap + index * (barWidth + gap);
+      const y = canvas.height - barHeight;
+
+      // Draw the bar
+      ctx.fillStyle = '#764ba2';
+      ctx.fillRect(x, y, barWidth, barHeight);
+
+      // Display user name above the bar
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px Poppins';
+      ctx.fillText(entry.UserName, x, y - 10);
+
+      // Display score inside the bar
+      ctx.fillStyle = '#000';
+      ctx.fillText(entry.Score, x + 10, y + 20);
+    });
+  }
+
+  // Add user input from client-side
+  function addUserPerformance() {
+    const name = document.getElementById('userName').value;
+    const score = parseInt(document.getElementById('userScore').value);
+
+    if (name && !isNaN(score) && score >= 0 && score <= 100) {
+      performanceData.push({ UserName: name, Score: score });
+      drawChart(); // Refresh the chart with the new entry
+      alert('Performance Added Successfully!');
+    } else {
+      alert('Please enter a valid name and score (0-100).');
+    }
+  }
+
+  // Upload data from Excel
+  function uploadFromExcel() {
+    const fileInput = document.getElementById('excelFile');
+    const file = fileInput.files[0];
+    if (!file) {
+      alert('Please select an Excel file to upload.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const excelData = XLSX.utils.sheet_to_json(sheet);
+
+      performanceData = excelData.map(row => ({
+        UserName: row.UserName,
+        Score: parseInt(row.Score)
+      }));
+
+      drawChart();
+      alert('Data uploaded successfully!');
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  // Download data to Excel
+  function downloadToExcel() {
+    const worksheet = XLSX.utils.json_to_sheet(performanceData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'PerformanceData');
+
+    XLSX.writeFile(workbook, 'PerformanceData.xlsx');
+  }
+
+  // Web3: Connect MetaMask
+  async function connectMetaMask() {
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        web3 = new Web3(window.ethereum);
+        alert('MetaMask Connected!');
+      } catch (error) {
+        console.error('User denied account access');
+      }
+    } else {
+      alert('Please install MetaMask!');
+    }
+  }
+
+  // Initial Empty Chart
+  drawChart();
+
+</script>
+
 </body>
 </html>
+
